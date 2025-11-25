@@ -23,3 +23,10 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 
 ![Estatísticas do GitHub](https://github-readme-stats.vercel.app/api?username=MatheusMartinez54&show_icons=true&theme=dark)
 
+
+## 📊 Estatísticas do GitHub
+
+![GitHub Stats](https://github-readme-stats.vercel.app/api?username=MatheusMartinez54&show_icons=true&theme=radical)
+
+![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=MatheusMartinez54&layout=compact&theme=radical)
+
