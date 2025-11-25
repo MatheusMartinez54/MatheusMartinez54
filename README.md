@@ -1,42 +1,44 @@
-<h1 align="center">👋 Olá! Eu sou o Matheus Martinez</h1>
+# 👋 Olá, eu sou o Matheus Martinez!
 
-<p align="center">Desenvolvedor apaixonado por tecnologia, mobile e soluções inteligentes.</p>
-
----
-
-## 🚀 Tecnologias
-
-![JS](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=000)
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=000)
-![ReactNative](https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=000)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=000)
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=fff)
+Sou desenvolvedor focado em **React**, **React Native**, **Firebase** e **Sistemas Offline-First**.  
+Apaixonado por tecnologia, automação e criação de soluções que realmente ajudam pessoas.
 
 ---
 
-## 🧩 Meus Projetos
+## 🚀 Tecnologias & Ferramentas
 
-### 📱 AppBio  
-Aplicativo com suporte a modo offline, integração com Firestore e interface moderna.  
+- **Linguagens:** JavaScript, TypeScript, Python  
+- **Frontend:** React, React Native, Vite  
+- **Backend / DB:** Firebase, Firestore, Node.js  
+- **Outras habilidades:** Git, APIs REST, AsyncStorage, Automação com Python/Selenium  
 
-### 🧪 Bio (PHP)  
-Sistema simples de gerenciamento de dados biomédicos.  
+---
+
+## 🧩 Projetos em Destaque
+
+### 🔬 **AppBio**  
+Aplicativo criado para gerenciamento de análises laboratoriais com suporte a **modo offline**, sincronização automática e UI moderna.  
+🔗 Repositório: https://github.com/MatheusMartinez54/AppBio  
+
+### 🧬 **Bio (PHP)**  
+Sistema simples para controle inicial de dados biomédicos.  
+🔗 Repositório: https://github.com/MatheusMartinez54/Bio  
 
 ---
 
 ## 📊 Estatísticas
 
-<div align="center">
-  <img height="160em" src="https://github-readme-stats.vercel.app/api?username=MatheusMartinez54&show_icons=true&theme=dracula"/>
-  <img height="160em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=MatheusMartinez54&layout=compact&theme=dracula"/>
-</div>
+![GitHub Stats](https://github-readme-stats.vercel.app/api?username=MatheusMartinez54&show_icons=true&theme=tokyonight)
+
+![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=MatheusMartinez54&layout=compact&theme=tokyonight)
 
 ---
 
-## 📫 Contato
+## 📫 Como me encontrar
 
-(Adicione LinkedIn/E-mail aqui)
+- GitHub: **@MatheusMartinez54**  
+- (Adicione LinkedIn, E-mail ou Portfólio aqui se quiser)
 
 ---
 
-⭐ *Obrigado por visitar meu perfil! Sinta-se à vontade para explorar meus projetos.*
+💬 *Sempre aberto para colaborar e ajudar!*  
