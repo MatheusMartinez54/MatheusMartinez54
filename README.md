@@ -38,6 +38,6 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 
 <!-- Endpoint dinâmico hospedado na Vercel -->
 
-![GitHub Stats Dinâmicas](https://SEU-PROJETO.vercel.app/api/stats?username=MatheusMartinez54)
+![GitHub Stats Dinâmicas](https://matheus-martinez54-n6rn.vercel.app/api/stats)
 
-<sub>Substitua `SEU-PROJETO` pelo nome do deploy na Vercel (ex: `readme-stats`). Você pode omitir `username` se definir `GITHUB_USERNAME` como variável de ambiente.</sub>
+<sub>Use seu subdomínio atual da Vercel. Adicione `?debug=1` para ver JSON, ou `?username=MatheusMartinez54` se quiser forçar usuário. Configure variáveis `GITHUB_USERNAME` e opcional `GITHUB_TOKEN` para reduzir rate limit.</sub>

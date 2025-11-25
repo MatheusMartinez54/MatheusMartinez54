@@ -5,13 +5,11 @@
 export default async function handler(req, res) {
   try {
     const { searchParams } = new URL(req.url, 'http://localhost');
-    const username = searchParams.get('username') || process.env.GITHUB_USERNAME;
-    if (!username) {
-      res.statusCode = 400;
-      res.setHeader('Content-Type', 'text/plain');
-      res.end('Missing username param or GITHUB_USERNAME env');
-      return;
-    }
+    // Fallback padrão para evitar imagens quebradas caso nada seja fornecido
+    const username = searchParams.get('username') || process.env.GITHUB_USERNAME || 'MatheusMartinez54';
+
+    // Se o usuário usar ?debug=1 retorna texto em vez de SVG para inspeção
+    const debug = searchParams.get('debug');
 
     const token = process.env.GITHUB_TOKEN;
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -54,13 +52,14 @@ export default async function handler(req, res) {
       })
       .join('\n');
 
-    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n<svg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' role='img'>\n  <title>${title}</title>\n  <style>text{font-family:Segoe UI,Verdana,sans-serif}</style>\n  <rect width='100%' height='100%' fill='#fafafa' stroke='#eaeaea'/>\n  <text x='20' y='40' font-size='24' font-weight='600' fill='#222'>${title}</text>\n  <text x='20' y='75' font-size='14' fill='#444'>Repositórios Públicos: ${
-      user.public_repos
-    }</text>\n  <text x='20' y='95' font-size='14' fill='#444'>Followers: ${
-      user.followers
-    }</text>\n  <text x='20' y='115' font-size='14' fill='#444'>Stars Totais: ${stars}</text>\n  <text x='20' y='135' font-size='14' fill='#222' font-weight='600'>Top Linguagens:</text>\n  ${langLines}\n  <text x='20' y='${
-      height - 10
-    }' font-size='10' fill='#888'>Atualizado: ${new Date().toISOString().split('T')[0]}</text>\n</svg>`;
+    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n<svg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' role='img'>\n  <title>${title}</title>\n  <style>text{font-family:Segoe UI,Verdana,sans-serif}</style>\n  <rect width='100%' height='100%' fill='#fafafa' stroke='#eaeaea'/>\n  <text x='20' y='40' font-size='24' font-weight='600' fill='#222'>${title}</text>\n  <text x='20' y='75' font-size='14' fill='#444'>Repositórios Públicos: ${user.public_repos}</text>\n  <text x='20' y='95' font-size='14' fill='#444'>Followers: ${user.followers}</text>\n  <text x='20' y='115' font-size='14' fill='#444'>Stars Totais: ${stars}</text>\n  <text x='20' y='135' font-size='14' fill='#222' font-weight='600'>Top Linguagens:</text>\n  ${langLines}\n  <text x='20' y='${height - 10}' font-size='10' fill='#888'>Atualizado: ${new Date().toISOString().split('T')[0]}</text>\n</svg>`;
+
+    if (debug) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ username, stars, public_repos: user.public_repos, followers: user.followers, topLanguages }, null, 2));
+      return;
+    }
 
     // Cache 5 minutos
     res.statusCode = 200;
