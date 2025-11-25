@@ -19,8 +19,6 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 
 ![GitHub Stats Dinâmicas](https://matheus-martinez54-n6rn.vercel.app/api/stats)
 
-<sub>Use seu subdomínio atual da Vercel. Adicione `?debug=1` para ver JSON, ou `?username=MatheusMartinez54` se quiser forçar usuário. Configure variáveis `GITHUB_USERNAME` e opcional `GITHUB_TOKEN` para reduzir rate limit.</sub>
-
 
 
 <picture align="center">
