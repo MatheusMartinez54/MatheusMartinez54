@@ -2,7 +2,7 @@
 // Gera um SVG com estatísticas básicas do GitHub.
 // Usa fetch nativo do Node 18.
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     const { searchParams } = new URL(req.url, 'http://localhost');
     // Fallback padrão para evitar imagens quebradas caso nada seja fornecido
@@ -63,7 +63,9 @@ export default async function handler(req, res) {
     if (debug) {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ username, stars, public_repos: user.public_repos, followers: user.followers, topLanguages }, null, 2));
+      res.end(
+        JSON.stringify({ endpoint: 'stats', username, stars, public_repos: user.public_repos, followers: user.followers, topLanguages }, null, 2),
+      );
       return;
     }
 
@@ -77,4 +79,4 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'text/plain');
     res.end('Error: ' + e.message);
   }
-}
+};
