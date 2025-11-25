@@ -51,28 +51,81 @@ module.exports = async function handler(req, res) {
 
     // Agregar estatísticas
     let stars = 0;
-    const languageCount = {};
-    for (const r of repos) {
-      stars += r.stargazers_count || 0;
-      if (r.language) languageCount[r.language] = (languageCount[r.language] || 0) + 1;
+    for (const r of repos) stars += r.stargazers_count || 0;
+
+    // Bytes por linguagem (para % real)
+    const langBytes = {};
+    const limitedRepos = repos.slice(0, 25);
+    for (const r of limitedRepos) {
+      const owner = r.owner && r.owner.login ? r.owner.login : username;
+      const lr = await fetch(`https://api.github.com/repos/${owner}/${r.name}/languages`, { headers });
+      if (!lr.ok) continue;
+      const data = await lr.json();
+      for (const [lang, bytes] of Object.entries(data)) {
+        langBytes[lang] = (langBytes[lang] || 0) + (bytes || 0);
+      }
     }
-    const topLanguages = Object.entries(languageCount)
+    const totalBytes = Object.values(langBytes).reduce((a, b) => a + b, 0) || 1;
+    const languagePercent = Object.entries(langBytes)
+      .map(([lang, bytes]) => [lang, bytes, Math.round((bytes / totalBytes) * 1000) / 10])
       .sort((a, b) => b[1] - a[1])
       .slice(0, limitLangs || 5);
 
+    // Contar commits por repositório (rápido via Link header)
+    async function countCommitsAll() {
+      let total = 0;
+      for (const r of limitedRepos) {
+        const owner = r.owner && r.owner.login ? r.owner.login : username;
+        const cr = await fetch(`https://api.github.com/repos/${owner}/${r.name}/commits?author=${username}&per_page=1`, { headers });
+        if (!cr.ok) continue;
+        const link = cr.headers.get('link');
+        if (link && link.includes('rel="last"')) {
+          const m = link.match(/[&?]page=(\d+)>; rel="last"/);
+          total += m ? parseInt(m[1], 10) : 1;
+        } else {
+          const arr = await cr.json();
+          total += Array.isArray(arr) && arr.length > 0 ? arr.length : 0;
+        }
+      }
+      return total;
+    }
+    const commits = await countCommitsAll();
+
     // Layout com espaçamentos melhores
-    const width = 520;
+    const width = 560;
     const baseY = 50; // posição do título
     const line = Math.round(fontSize * 1.4);
-    const headBlock = baseY + line * 4; // espaço para métricas principais
+    const headBlock = baseY + line * 5; // espaço para métricas principais + commits
     const langsStart = headBlock + Math.round(line * 0.8); // separação antes do bloco de linguagens
-    const height = langsStart + (topLanguages.length + 1) * line + 24; // +rodapé
+    const height = langsStart + (languagePercent.length + 1) * line + 36; // +rodapé
     const title = `${username} • GitHub Stats`;
 
-    const langLines = topLanguages
-      .map(([lang, count], i) => {
+    const ICONS = {
+      JavaScript: '🟨',
+      TypeScript: '🟦',
+      Python: '🐍',
+      PHP: '🐘',
+      Java: '☕',
+      HTML: '🟧',
+      CSS: '🟦',
+      C: '🔵',
+      'C++': '🔷',
+      'C#': '🟣',
+      Go: '🟡',
+      Shell: '💚',
+      Vue: '🟢',
+      Swift: '🟠',
+      Kotlin: '🟪',
+      Rust: '🦀'
+    };
+    const barX = 170;
+    const barW = width - barX - 24;
+    const langLines = languagePercent
+      .map(([lang, _bytes, pct], i) => {
         const y = langsStart + (i + 1) * line;
-        return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${lang}: ${count}</text>`;
+        const w = Math.max(2, Math.round((pct / 100) * barW));
+        const icon = ICONS[lang] || '🔹';
+        return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${y - Math.round(fontSize * 0.9)}' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
       })
       .join('\n');
 
@@ -94,11 +147,7 @@ module.exports = async function handler(req, res) {
       user.public_repos
     }</text>\n  <text x='20' y='${baseY + line * 2}' font-size='${fontSize}' fill='${colors.text}'>Followers: ${
       user.followers
-    }</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${
-      colors.text
-    }'>Stars Totais: ${stars}</text>\n  <text x='20' y='${langsStart}' font-size='${fontSize}' fill='${
-      colors.title
-    }' font-weight='600'>Top Linguagens:</text>\n  ${langLines}\n  <text x='20' y='${height - 12}' font-size='${Math.max(
+    }</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${colors.text}'>Stars Totais: ${stars}</text>\n  <text x='20' y='${baseY + line * 4}' font-size='${fontSize}' fill='${colors.text}'>Commits (públicos): ${commits}</text>\n  <text x='20' y='${langsStart}' font-size='${fontSize}' fill='${colors.title}' font-weight='600'>Linguagens por uso (%)</text>\n  ${langLines}\n  <text x='20' y='${height - 12}' font-size='${Math.max(
       9,
       Math.round(fontSize * 0.75),
     )}' fill='${colors.text}' opacity='0.6'>Atualizado: ${new Date().toISOString().split('T')[0]}</text>\n</svg>`;
