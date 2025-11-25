@@ -29,9 +29,6 @@ Sistema simples de gerenciamento de dados biomédicos.
 <div align="center">
   <img height="160em" src="https://github-readme-stats.vercel.app/api?username=MatheusMartinez54&show_icons=true&theme=dracula"/>
   <img height="160em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=MatheusMartinez54&layout=compact&theme=dracula"/>
-  
-  <!-- Cobrinha dos commits (gerado via GitHub Actions) -->
-  <img src="https://github.com/MatheusMartinez54/MatheusMartinez54/blob/output/snake.svg" alt="Cobrinha comendo meus commits" />
 </div>
 
 ---
