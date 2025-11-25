@@ -12,3 +12,8 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 - **Backend / DB:** Firebase, Firestore, Node.js  
 - **Outras habilidades:** Git, APIs REST, AsyncStorage, Automação com Python/Selenium  
 
+## 📊 Estatísticas
+
+![Matheus's GitHub stats](https://github-readme-stats.vercel.app/api?username=MatheusMartinez54&show_icons=true&theme=tokyonight)
+
+![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=MatheusMartinez54&layout=compact&theme=tokyonight)
