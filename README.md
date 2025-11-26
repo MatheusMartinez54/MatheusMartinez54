@@ -22,11 +22,9 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 
 <!-- Endpoint dinâmico hospedado na Vercel -->
 
-<!-- Dashboard compacto, duplicado, sem título -->
+<!-- Dashboard compacto, único, sem título -->
 
-![Stats Dashboard 1](https://matheus-martinez54.vercel.app/api/stats?mode=compact&card=1&radius=12&theme=dark&langs=6&font=14&showTitle=0)
-
-![Stats Dashboard 2](https://matheus-martinez54.vercel.app/api/stats?mode=compact&card=1&radius=12&theme=dark&langs=6&font=14&showTitle=0)
+![Stats Dashboard](https://matheus-martinez54.vercel.app/api/stats?mode=compact&card=1&radius=12&theme=dark&langs=6&font=14&showTitle=0)
 
 <sub>Parâmetros: `mode=compact`, `card=1`, `radius=12`, `langs=6`, `theme=dark`, `font=14`, `showTitle=0`. Use `debug=1` para JSON.</sub>
 
