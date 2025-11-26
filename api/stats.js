@@ -19,6 +19,8 @@ module.exports = async function handler(req, res) {
     const fontSize = Math.max(10, Math.min(24, Number(searchParams.get('font') || 14)));
     const transparent = searchParams.get('transparent') === '1';
     const mode = (searchParams.get('mode') || 'full').toLowerCase();
+    const chart = (searchParams.get('chart') || 'bars').toLowerCase();
+    const repoLimit = Math.max(1, Math.min(100, Number(searchParams.get('repoLimit') || 50)));
     const noCard = searchParams.get('card') === '0';
 
     const THEMES = {
@@ -56,7 +58,7 @@ module.exports = async function handler(req, res) {
     const sameUser = viewer && viewer.login && viewer.login.toLowerCase() === username.toLowerCase();
     const reposUrl =
       token && sameUser
-        ? 'https://api.github.com/user/repos?per_page=100&affiliation=owner'
+        ? 'https://api.github.com/user/repos?per_page=100&affiliation=owner,collaborator,organization_member&visibility=all'
         : `https://api.github.com/users/${username}/repos?per_page=100`;
     const reposResp = await fetch(reposUrl, { headers });
     if (!userResp.ok) throw new Error('User fetch failed');
@@ -70,7 +72,7 @@ module.exports = async function handler(req, res) {
 
     // Bytes por linguagem (para % real)
     const langBytes = {};
-    const limitedRepos = repos.slice(0, 25);
+    const limitedRepos = repos.slice(0, repoLimit);
     for (const r of limitedRepos) {
       const owner = r.owner && r.owner.login ? r.owner.login : username;
       const lr = await fetch(`https://api.github.com/repos/${owner}/${r.name}/languages`, { headers });
@@ -158,32 +160,87 @@ module.exports = async function handler(req, res) {
       Kotlin: '🟪',
       Rust: '🦀',
     };
+    const COLOR_MAP = {
+      JavaScript: '#3B82F6',
+      TypeScript: '#0EA5E9',
+      Python: '#F59E0B',
+      PHP: '#8B5CF6',
+      Java: '#EA580C',
+      HTML: '#F97316',
+      CSS: '#06B6D4',
+      C: '#64748B',
+      'C++': '#475569',
+      'C#': '#22C55E',
+      Go: '#14B8A6',
+      Shell: '#10B981',
+      Vue: '#22C55E',
+      Swift: '#FB923C',
+      Kotlin: '#A855F7',
+      Rust: '#EF4444',
+    };
+    const FALLBACK_COLORS = ['#3B82F6', '#22C55E', '#F59E0B', '#8B5CF6', '#EF4444', '#06B6D4', '#A855F7', '#14B8A6', '#F43F5E', '#6366F1', '#84CC16'];
+
     const barX = isCompact ? 200 : 170;
     const barW = width - barX - 24;
     let langLines;
-    if (isCompact) {
-      // Compact: mostrar lista inline com barras finas
+    let chartSvg = '';
+    if (chart === 'pie') {
       langLines = languagePercent
         .map(([lang, _bytes, pct], i) => {
-          const y = langsStart + i * line;
-          const w = Math.max(2, Math.round((pct / 100) * barW));
-          const icon = ICONS[lang] || '🔹';
-          return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} ${pct}%</text>\n<rect x='${barX}' y='${
+          const y = langsStart + (isCompact ? i * line : (i + 1) * line);
+          const color = COLOR_MAP[lang] || FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+          return `<rect x='20' y='${
             y - Math.round(fontSize * 0.75)
-          }' width='${w}' height='${Math.round(fontSize * 0.6)}' fill='${colors.accent}' rx='3' />`;
+          }' width='10' height='10' fill='${color}' rx='2' />\n<text x='36' y='${y}' font-size='${fontSize}' fill='${
+            colors.text
+          }'>${lang} ${pct}%</text>`;
         })
         .join('\n');
-    } else {
-      langLines = languagePercent
+
+      const pieR = isCompact ? 46 : 56;
+      const listH = (isCompact ? languagePercent.length : languagePercent.length + 1) * line;
+      const pieCx = width - (isCompact ? 90 : 100);
+      const pieCy = langsStart + Math.round(listH / 2) - Math.round(line / 2);
+      const pieStroke = isCompact ? 16 : 18;
+      const circ = 2 * Math.PI * pieR;
+      let offset = 0;
+      const segments = languagePercent
         .map(([lang, _bytes, pct], i) => {
-          const y = langsStart + (i + 1) * line;
-          const w = Math.max(2, Math.round((pct / 100) * barW));
-          const icon = ICONS[lang] || '🔹';
-          return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${
-            y - Math.round(fontSize * 0.9)
-          }' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
+          const color = COLOR_MAP[lang] || FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+          const seg = Math.max(0.0001, (pct / 100) * circ);
+          const segSvg = `<circle cx='${pieCx}' cy='${pieCy}' r='${pieR}' fill='none' stroke='${color}' stroke-width='${pieStroke}' stroke-dasharray='${seg} ${
+            circ - seg
+          }' stroke-dashoffset='${-offset}' transform='rotate(-90 ${pieCx} ${pieCy})' />`;
+          offset += seg;
+          return segSvg;
         })
         .join('\n');
+      const base = `<circle cx='${pieCx}' cy='${pieCy}' r='${pieR}' fill='none' stroke='${colors.border}' stroke-width='${pieStroke}' opacity='0.3' />`;
+      chartSvg = `${base}\n${segments}`;
+    } else {
+      if (isCompact) {
+        langLines = languagePercent
+          .map(([lang, _bytes, pct], i) => {
+            const y = langsStart + i * line;
+            const w = Math.max(2, Math.round((pct / 100) * barW));
+            const icon = ICONS[lang] || '🔹';
+            return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} ${pct}%</text>\n<rect x='${barX}' y='${
+              y - Math.round(fontSize * 0.75)
+            }' width='${w}' height='${Math.round(fontSize * 0.6)}' fill='${colors.accent}' rx='3' />`;
+          })
+          .join('\n');
+      } else {
+        langLines = languagePercent
+          .map(([lang, _bytes, pct], i) => {
+            const y = langsStart + (i + 1) * line;
+            const w = Math.max(2, Math.round((pct / 100) * barW));
+            const icon = ICONS[lang] || '🔹';
+            return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${
+              y - Math.round(fontSize * 0.9)
+            }' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
+          })
+          .join('\n');
+      }
     }
 
     if (debug) {
@@ -222,7 +279,7 @@ module.exports = async function handler(req, res) {
     const headerText = title
       ? `<text x='20' y='${baseY}' font-size='${Math.round(fontSize * 1.6)}' font-weight='600' fill='${colors.title}'>${title}</text>`
       : '';
-    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n<svg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' role='img'>\n  <title>${title}</title>\n  <style>text{font-family:Segoe UI,Ubuntu,Helvetica,Arial,sans-serif}</style>\n  ${rect}\n  ${headerText}\n  ${headMetrics}\n  ${languagesTitle}\n  ${langLines}\n  <text x='20' y='${
+    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n<svg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' role='img'>\n  <title>${title}</title>\n  <style>text{font-family:Segoe UI,Ubuntu,Helvetica,Arial,sans-serif}</style>\n  ${rect}\n  ${headerText}\n  ${headMetrics}\n  ${languagesTitle}\n  ${langLines}\n  ${chartSvg}\n  <text x='20' y='${
       height - 12
     }' font-size='${Math.max(9, Math.round(fontSize * 0.75))}' fill='${colors.text}' opacity='0.6'>Atualizado: ${
       new Date().toISOString().split('T')[0]
