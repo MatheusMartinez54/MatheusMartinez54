@@ -9,6 +9,7 @@ module.exports = async function handler(req, res) {
     // Parâmetros básicos
     const username = searchParams.get('username') || process.env.GITHUB_USERNAME || 'MatheusMartinez54';
     const debug = searchParams.get('debug');
+    const showTitle = searchParams.get('showTitle') || '1';
 
     // Parâmetros de customização
     const theme = (searchParams.get('theme') || 'light').toLowerCase();
@@ -93,6 +94,7 @@ module.exports = async function handler(req, res) {
       return total;
     }
     const commits = await countCommitsAll();
+    const headerTitle = showTitle === '1' ? `${username} • GitHub Stats` : '';
 
     // Layout dinâmico (full ou compact)
     const isCompact = mode === 'compact';
@@ -102,10 +104,8 @@ module.exports = async function handler(req, res) {
     const headLines = isCompact ? 3 : 5; // em compact não exibimos commits e stars separados? (exibiremos reduzidos)
     const headBlock = baseY + line * headLines;
     const langsStart = headBlock + Math.round(line * 0.6);
-    const height = isCompact
-      ? langsStart + (languagePercent.length) * line + 30
-      : langsStart + (languagePercent.length + 1) * line + 36;
-    const title = `${username} • GitHub Stats`;
+    const height = isCompact ? langsStart + languagePercent.length * line + 30 : langsStart + (languagePercent.length + 1) * line + 36;
+    const title = headerTitle;
 
     const ICONS = {
       JavaScript: '🟨',
@@ -135,7 +135,9 @@ module.exports = async function handler(req, res) {
           const y = langsStart + i * line;
           const w = Math.max(2, Math.round((pct / 100) * barW));
           const icon = ICONS[lang] || '🔹';
-          return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} ${pct}%</text>\n<rect x='${barX}' y='${y - Math.round(fontSize * 0.75)}' width='${w}' height='${Math.round(fontSize * 0.6)}' fill='${colors.accent}' rx='3' />`;
+          return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} ${pct}%</text>\n<rect x='${barX}' y='${
+            y - Math.round(fontSize * 0.75)
+          }' width='${w}' height='${Math.round(fontSize * 0.6)}' fill='${colors.accent}' rx='3' />`;
         })
         .join('\n');
     } else {
@@ -144,7 +146,9 @@ module.exports = async function handler(req, res) {
           const y = langsStart + (i + 1) * line;
           const w = Math.max(2, Math.round((pct / 100) * barW));
           const icon = ICONS[lang] || '🔹';
-          return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${y - Math.round(fontSize * 0.9)}' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
+          return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${
+            y - Math.round(fontSize * 0.9)
+          }' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
         })
         .join('\n');
     }
@@ -163,16 +167,33 @@ module.exports = async function handler(req, res) {
 
     let headMetrics;
     if (isCompact) {
-      headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repos: ${user.public_repos} • Followers: ${user.followers} • Stars: ${stars} • Commits: ${commits}</text>`;
+      headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repos: ${user.public_repos} • Followers: ${
+        user.followers
+      } • Stars: ${stars} • Commits: ${commits}</text>`;
     } else {
-      headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repositórios Públicos: ${user.public_repos}</text>\n  <text x='20' y='${baseY + line * 2}' font-size='${fontSize}' fill='${colors.text}'>Followers: ${user.followers}</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${colors.text}'>Stars Totais: ${stars}</text>\n  <text x='20' y='${baseY + line * 4}' font-size='${fontSize}' fill='${colors.text}'>Commits (públicos): ${commits}</text>`;
+      headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repositórios Públicos: ${
+        user.public_repos
+      }</text>\n  <text x='20' y='${baseY + line * 2}' font-size='${fontSize}' fill='${colors.text}'>Followers: ${
+        user.followers
+      }</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${
+        colors.text
+      }'>Stars Totais: ${stars}</text>\n  <text x='20' y='${baseY + line * 4}' font-size='${fontSize}' fill='${
+        colors.text
+      }'>Commits (públicos): ${commits}</text>`;
     }
 
     const languagesTitle = isCompact
       ? `<text x='20' y='${langsStart - Math.round(line * 0.2)}' font-size='${fontSize}' fill='${colors.title}' font-weight='600'>Linguagens</text>`
       : `<text x='20' y='${langsStart}' font-size='${fontSize}' fill='${colors.title}' font-weight='600'>Linguagens por uso (%)</text>`;
 
-    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n<svg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' role='img'>\n  <title>${title}</title>\n  <style>text{font-family:Segoe UI,Ubuntu,Helvetica,Arial,sans-serif}</style>\n  ${rect}\n  <text x='20' y='${baseY}' font-size='${Math.round(fontSize * 1.6)}' font-weight='600' fill='${colors.title}'>${title}</text>\n  ${headMetrics}\n  ${languagesTitle}\n  ${langLines}\n  <text x='20' y='${height - 12}' font-size='${Math.max(9, Math.round(fontSize * 0.75))}' fill='${colors.text}' opacity='0.6'>Atualizado: ${new Date().toISOString().split('T')[0]}</text>\n</svg>`;
+    const headerText = title
+      ? `<text x='20' y='${baseY}' font-size='${Math.round(fontSize * 1.6)}' font-weight='600' fill='${colors.title}'>${title}</text>`
+      : '';
+    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n<svg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' role='img'>\n  <title>${title}</title>\n  <style>text{font-family:Segoe UI,Ubuntu,Helvetica,Arial,sans-serif}</style>\n  ${rect}\n  ${headerText}\n  ${headMetrics}\n  ${languagesTitle}\n  ${langLines}\n  <text x='20' y='${
+      height - 12
+    }' font-size='${Math.max(9, Math.round(fontSize * 0.75))}' fill='${colors.text}' opacity='0.6'>Atualizado: ${
+      new Date().toISOString().split('T')[0]
+    }</text>\n</svg>`;
 
     // Cache 5 minutos
     res.statusCode = 200;

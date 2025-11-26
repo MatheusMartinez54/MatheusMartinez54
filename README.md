@@ -7,7 +7,6 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 
 ## 🚀 Tecnologias & Ferramentas
 
-
 <!-- Ícones e badges da stack principal -->
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=000)
@@ -23,13 +22,13 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 
 <!-- Endpoint dinâmico hospedado na Vercel -->
 
-<!-- Versão completa (card padrão) -->
-![Stats Full](https://matheus-martinez54.vercel.app/api/stats?theme=dark&langs=6&radius=12&font=15)
+<!-- Dashboard compacto, duplicado, sem título -->
 
-<!-- Versão compacta, transparente e sem borda (para fundo escuro) -->
-![Stats Compact](https://matheus-martinez54.vercel.app/api/stats?mode=compact&transparent=1&card=0&theme=dark&langs=6&font=14)
+![Stats Dashboard 1](https://matheus-martinez54.vercel.app/api/stats?mode=compact&card=1&radius=12&theme=dark&langs=6&font=14&showTitle=0)
 
-<sub>Parâmetros: `mode=compact`, `transparent=1`, `card=0`, `langs=6`, `theme=dark`, `font=14`. Use `debug=1` para JSON.</sub>
+![Stats Dashboard 2](https://matheus-martinez54.vercel.app/api/stats?mode=compact&card=1&radius=12&theme=dark&langs=6&font=14&showTitle=0)
+
+<sub>Parâmetros: `mode=compact`, `card=1`, `radius=12`, `langs=6`, `theme=dark`, `font=14`, `showTitle=0`. Use `debug=1` para JSON.</sub>
 
 <picture align="center">
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/MatheusMartinez54/MatheusMartinez54/output/github-contribution-grid-snake-dark.svg">
