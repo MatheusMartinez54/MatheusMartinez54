@@ -116,7 +116,7 @@ module.exports = async function handler(req, res) {
       Vue: '🟢',
       Swift: '🟠',
       Kotlin: '🟪',
-      Rust: '🦀'
+      Rust: '🦀',
     };
     const barX = 170;
     const barW = width - barX - 24;
@@ -125,7 +125,9 @@ module.exports = async function handler(req, res) {
         const y = langsStart + (i + 1) * line;
         const w = Math.max(2, Math.round((pct / 100) * barW));
         const icon = ICONS[lang] || '🔹';
-        return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${y - Math.round(fontSize * 0.9)}' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
+        return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${
+          y - Math.round(fontSize * 0.9)
+        }' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
       })
       .join('\n');
 
@@ -147,7 +149,13 @@ module.exports = async function handler(req, res) {
       user.public_repos
     }</text>\n  <text x='20' y='${baseY + line * 2}' font-size='${fontSize}' fill='${colors.text}'>Followers: ${
       user.followers
-    }</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${colors.text}'>Stars Totais: ${stars}</text>\n  <text x='20' y='${baseY + line * 4}' font-size='${fontSize}' fill='${colors.text}'>Commits (públicos): ${commits}</text>\n  <text x='20' y='${langsStart}' font-size='${fontSize}' fill='${colors.title}' font-weight='600'>Linguagens por uso (%)</text>\n  ${langLines}\n  <text x='20' y='${height - 12}' font-size='${Math.max(
+    }</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${colors.text}'>Stars Totais: ${stars}</text>\n  <text x='20' y='${
+      baseY + line * 4
+    }' font-size='${fontSize}' fill='${
+      colors.text
+    }'>Commits (públicos): ${commits}</text>\n  <text x='20' y='${langsStart}' font-size='${fontSize}' fill='${
+      colors.title
+    }' font-weight='600'>Linguagens por uso (%)</text>\n  ${langLines}\n  <text x='20' y='${height - 12}' font-size='${Math.max(
       9,
       Math.round(fontSize * 0.75),
     )}' fill='${colors.text}' opacity='0.6'>Atualizado: ${new Date().toISOString().split('T')[0]}</text>\n</svg>`;
