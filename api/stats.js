@@ -43,11 +43,22 @@ module.exports = async function handler(req, res) {
     const token = process.env.GITHUB_TOKEN;
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    // Fetch user e repos
-    const [userResp, reposResp] = await Promise.all([
-      fetch(`https://api.github.com/users/${username}`, { headers }),
-      fetch(`https://api.github.com/users/${username}/repos?per_page=100`, { headers }),
-    ]);
+    // Fetch user e repos (se tiver token do próprio usuário, busca também privados)
+    const userResp = await fetch(`https://api.github.com/users/${username}`, { headers });
+    if (!userResp.ok) throw new Error('User fetch failed');
+    let viewer = null;
+    if (token) {
+      try {
+        const viewerResp = await fetch('https://api.github.com/user', { headers });
+        if (viewerResp.ok) viewer = await viewerResp.json();
+      } catch (_) {}
+    }
+    const sameUser = viewer && viewer.login && viewer.login.toLowerCase() === username.toLowerCase();
+    const reposUrl =
+      token && sameUser
+        ? 'https://api.github.com/user/repos?per_page=100&affiliation=owner'
+        : `https://api.github.com/users/${username}/repos?per_page=100`;
+    const reposResp = await fetch(reposUrl, { headers });
     if (!userResp.ok) throw new Error('User fetch failed');
     if (!reposResp.ok) throw new Error('Repos fetch failed');
     const user = await userResp.json();
@@ -114,16 +125,8 @@ module.exports = async function handler(req, res) {
       return total;
     }
 
-    let commits = 0;
-    if (token) {
-      try {
-        commits = await countCommitsGraphQL();
-      } catch (_) {
-        commits = await countCommitsREST();
-      }
-    } else {
-      commits = await countCommitsREST();
-    }
+    // Preferimos REST (suporta histórico completo); com token+mesmo usuário inclui privados
+    let commits = await countCommitsREST();
     const headerTitle = showTitle === '1' ? `${username} • GitHub Stats` : '';
 
     // Layout dinâmico (full ou compact)
@@ -209,7 +212,7 @@ module.exports = async function handler(req, res) {
         colors.text
       }'>Estrelas Totais: ${stars}</text>\n  <text x='20' y='${baseY + line * 4}' font-size='${fontSize}' fill='${
         colors.text
-      }'>Commits (públicos): ${commits}</text>`;
+      }'>Commits: ${commits}</text>`;
     }
 
     const languagesTitle = isCompact
