@@ -75,8 +75,28 @@ module.exports = async function handler(req, res) {
       .sort((a, b) => b[1] - a[1])
       .slice(0, limitLangs || 5);
 
-    // Contar commits por repositório (rápido via Link header)
-    async function countCommitsAll() {
+    // Commits: se houver token, usar GraphQL para incluir privados; senão, REST por repo (públicos)
+    async function countCommitsGraphQL() {
+      const body = {
+        query: `query($from: DateTime!, $to: DateTime!) { viewer { contributionsCollection(from: $from, to: $to) { totalCommitContributions } } }`,
+        variables: {
+          from: '1970-01-01T00:00:00Z',
+          to: new Date().toISOString(),
+        },
+      };
+      const resp = await fetch('https://api.github.com/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(body),
+      });
+      if (!resp.ok) throw new Error('GraphQL fetch failed');
+      const j = await resp.json();
+      const val =
+        j && j.data && j.data.viewer && j.data.viewer.contributionsCollection && j.data.viewer.contributionsCollection.totalCommitContributions;
+      return typeof val === 'number' ? val : 0;
+    }
+
+    async function countCommitsREST() {
       let total = 0;
       for (const r of limitedRepos) {
         const owner = r.owner && r.owner.login ? r.owner.login : username;
@@ -93,7 +113,17 @@ module.exports = async function handler(req, res) {
       }
       return total;
     }
-    const commits = await countCommitsAll();
+
+    let commits = 0;
+    if (token) {
+      try {
+        commits = await countCommitsGraphQL();
+      } catch (_) {
+        commits = await countCommitsREST();
+      }
+    } else {
+      commits = await countCommitsREST();
+    }
     const headerTitle = showTitle === '1' ? `${username} • GitHub Stats` : '';
 
     // Layout dinâmico (full ou compact)
@@ -167,17 +197,17 @@ module.exports = async function handler(req, res) {
 
     let headMetrics;
     if (isCompact) {
-      headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repos: ${user.public_repos} • Followers: ${
-        user.followers
-      } • Stars: ${stars} • Commits: ${commits}</text>`;
+      headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repositórios: ${
+        user.public_repos
+      } • Seguidores: ${user.followers} • Estrelas: ${stars} • Commits: ${commits}</text>`;
     } else {
       headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repositórios Públicos: ${
         user.public_repos
-      }</text>\n  <text x='20' y='${baseY + line * 2}' font-size='${fontSize}' fill='${colors.text}'>Followers: ${
+      }</text>\n  <text x='20' y='${baseY + line * 2}' font-size='${fontSize}' fill='${colors.text}'>Seguidores: ${
         user.followers
       }</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${
         colors.text
-      }'>Stars Totais: ${stars}</text>\n  <text x='20' y='${baseY + line * 4}' font-size='${fontSize}' fill='${
+      }'>Estrelas Totais: ${stars}</text>\n  <text x='20' y='${baseY + line * 4}' font-size='${fontSize}' fill='${
         colors.text
       }'>Commits (públicos): ${commits}</text>`;
     }
