@@ -16,6 +16,9 @@ module.exports = async function handler(req, res) {
     const radius = Math.max(0, Math.min(24, Number(searchParams.get('radius') || 10)));
     const hideBorder = searchParams.get('hideBorder') === '1';
     const fontSize = Math.max(10, Math.min(24, Number(searchParams.get('font') || 14)));
+    const transparent = searchParams.get('transparent') === '1';
+    const mode = (searchParams.get('mode') || 'full').toLowerCase();
+    const noCard = searchParams.get('card') === '0';
 
     const THEMES = {
       light: { bg: '#fafafa', border: '#eaeaea', title: '#222', text: '#444', accent: '#5865F2' },
@@ -91,13 +94,17 @@ module.exports = async function handler(req, res) {
     }
     const commits = await countCommitsAll();
 
-    // Layout com espaçamentos melhores
-    const width = 560;
-    const baseY = 50; // posição do título
-    const line = Math.round(fontSize * 1.4);
-    const headBlock = baseY + line * 5; // espaço para métricas principais + commits
-    const langsStart = headBlock + Math.round(line * 0.8); // separação antes do bloco de linguagens
-    const height = langsStart + (languagePercent.length + 1) * line + 36; // +rodapé
+    // Layout dinâmico (full ou compact)
+    const isCompact = mode === 'compact';
+    const width = isCompact ? 420 : 560;
+    const baseY = 40; // posição do título
+    const line = Math.round(fontSize * 1.35);
+    const headLines = isCompact ? 3 : 5; // em compact não exibimos commits e stars separados? (exibiremos reduzidos)
+    const headBlock = baseY + line * headLines;
+    const langsStart = headBlock + Math.round(line * 0.6);
+    const height = isCompact
+      ? langsStart + (languagePercent.length) * line + 30
+      : langsStart + (languagePercent.length + 1) * line + 36;
     const title = `${username} • GitHub Stats`;
 
     const ICONS = {
@@ -118,18 +125,29 @@ module.exports = async function handler(req, res) {
       Kotlin: '🟪',
       Rust: '🦀',
     };
-    const barX = 170;
+    const barX = isCompact ? 200 : 170;
     const barW = width - barX - 24;
-    const langLines = languagePercent
-      .map(([lang, _bytes, pct], i) => {
-        const y = langsStart + (i + 1) * line;
-        const w = Math.max(2, Math.round((pct / 100) * barW));
-        const icon = ICONS[lang] || '🔹';
-        return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${
-          y - Math.round(fontSize * 0.9)
-        }' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
-      })
-      .join('\n');
+    let langLines;
+    if (isCompact) {
+      // Compact: mostrar lista inline com barras finas
+      langLines = languagePercent
+        .map(([lang, _bytes, pct], i) => {
+          const y = langsStart + i * line;
+          const w = Math.max(2, Math.round((pct / 100) * barW));
+          const icon = ICONS[lang] || '🔹';
+          return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} ${pct}%</text>\n<rect x='${barX}' y='${y - Math.round(fontSize * 0.75)}' width='${w}' height='${Math.round(fontSize * 0.6)}' fill='${colors.accent}' rx='3' />`;
+        })
+        .join('\n');
+    } else {
+      langLines = languagePercent
+        .map(([lang, _bytes, pct], i) => {
+          const y = langsStart + (i + 1) * line;
+          const w = Math.max(2, Math.round((pct / 100) * barW));
+          const icon = ICONS[lang] || '🔹';
+          return `<text x='20' y='${y}' font-size='${fontSize}' fill='${colors.text}'>${icon} ${lang} (${pct}%)</text>\n<rect x='${barX}' y='${y - Math.round(fontSize * 0.9)}' width='${w}' height='${Math.round(fontSize * 0.8)}' fill='${colors.accent}' rx='4' />`;
+        })
+        .join('\n');
+    }
 
     if (debug) {
       res.statusCode = 200;
@@ -140,25 +158,21 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const borderAttrs = hideBorder ? '' : `stroke='${colors.border}'`;
-    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n<svg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' role='img'>\n  <title>${title}</title>\n  <style>text{font-family:Segoe UI,Ubuntu,Helvetica,Arial,sans-serif}</style>\n  <rect width='100%' height='100%' fill='${
-      colors.bg
-    }' ${borderAttrs} rx='${radius}'/>\n  <text x='20' y='${baseY}' font-size='${Math.round(fontSize * 1.7)}' font-weight='600' fill='${
-      colors.title
-    }'>${title}</text>\n  <text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repositórios Públicos: ${
-      user.public_repos
-    }</text>\n  <text x='20' y='${baseY + line * 2}' font-size='${fontSize}' fill='${colors.text}'>Followers: ${
-      user.followers
-    }</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${colors.text}'>Stars Totais: ${stars}</text>\n  <text x='20' y='${
-      baseY + line * 4
-    }' font-size='${fontSize}' fill='${
-      colors.text
-    }'>Commits (públicos): ${commits}</text>\n  <text x='20' y='${langsStart}' font-size='${fontSize}' fill='${
-      colors.title
-    }' font-weight='600'>Linguagens por uso (%)</text>\n  ${langLines}\n  <text x='20' y='${height - 12}' font-size='${Math.max(
-      9,
-      Math.round(fontSize * 0.75),
-    )}' fill='${colors.text}' opacity='0.6'>Atualizado: ${new Date().toISOString().split('T')[0]}</text>\n</svg>`;
+    const borderAttrs = hideBorder || noCard ? '' : `stroke='${colors.border}'`;
+    const rect = noCard ? '' : `<rect width='100%' height='100%' fill='${transparent ? 'none' : colors.bg}' ${borderAttrs} rx='${radius}'/>`;
+
+    let headMetrics;
+    if (isCompact) {
+      headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repos: ${user.public_repos} • Followers: ${user.followers} • Stars: ${stars} • Commits: ${commits}</text>`;
+    } else {
+      headMetrics = `<text x='20' y='${baseY + line}' font-size='${fontSize}' fill='${colors.text}'>Repositórios Públicos: ${user.public_repos}</text>\n  <text x='20' y='${baseY + line * 2}' font-size='${fontSize}' fill='${colors.text}'>Followers: ${user.followers}</text>\n  <text x='20' y='${baseY + line * 3}' font-size='${fontSize}' fill='${colors.text}'>Stars Totais: ${stars}</text>\n  <text x='20' y='${baseY + line * 4}' font-size='${fontSize}' fill='${colors.text}'>Commits (públicos): ${commits}</text>`;
+    }
+
+    const languagesTitle = isCompact
+      ? `<text x='20' y='${langsStart - Math.round(line * 0.2)}' font-size='${fontSize}' fill='${colors.title}' font-weight='600'>Linguagens</text>`
+      : `<text x='20' y='${langsStart}' font-size='${fontSize}' fill='${colors.title}' font-weight='600'>Linguagens por uso (%)</text>`;
+
+    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n<svg width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' role='img'>\n  <title>${title}</title>\n  <style>text{font-family:Segoe UI,Ubuntu,Helvetica,Arial,sans-serif}</style>\n  ${rect}\n  <text x='20' y='${baseY}' font-size='${Math.round(fontSize * 1.6)}' font-weight='600' fill='${colors.title}'>${title}</text>\n  ${headMetrics}\n  ${languagesTitle}\n  ${langLines}\n  <text x='20' y='${height - 12}' font-size='${Math.max(9, Math.round(fontSize * 0.75))}' fill='${colors.text}' opacity='0.6'>Atualizado: ${new Date().toISOString().split('T')[0]}</text>\n</svg>`;
 
     // Cache 5 minutos
     res.statusCode = 200;

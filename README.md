@@ -23,7 +23,13 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 
 <!-- Endpoint dinâmico hospedado na Vercel -->
 
-![GitHub Stats Dinâmicas](https://matheus-martinez54-n6rn.vercel.app/api/stats)
+<!-- Versão completa (card padrão) -->
+![Stats Full](https://matheus-martinez54.vercel.app/api/stats?theme=dark&langs=6&radius=12&font=15)
+
+<!-- Versão compacta, transparente e sem borda (para fundo escuro) -->
+![Stats Compact](https://matheus-martinez54.vercel.app/api/stats?mode=compact&transparent=1&card=0&theme=dark&langs=6&font=14)
+
+<sub>Parâmetros: `mode=compact`, `transparent=1`, `card=0`, `langs=6`, `theme=dark`, `font=14`. Use `debug=1` para JSON.</sub>
 
 <picture align="center">
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/MatheusMartinez54/MatheusMartinez54/output/github-contribution-grid-snake-dark.svg">
