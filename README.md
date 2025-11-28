@@ -18,13 +18,7 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=000)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=fff)
 
-## 📈 Estatísticas Personalizadas
 
-<!-- Endpoint dinâmico hospedado na Vercel -->
-
-<!-- Dashboard compacto, único, sem título -->
-
-![Stats Dashboard](https://matheus-martinez54.vercel.app/api/stats?mode=compact&card=1&radius=12&theme=dark&langs=6&font=14&showTitle=0)
 
 
 
