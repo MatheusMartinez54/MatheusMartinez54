@@ -26,7 +26,7 @@ Apaixonado por tecnologia, automação e criação de soluções que realmente a
 
 ![Stats Dashboard](https://matheus-martinez54.vercel.app/api/stats?mode=compact&card=1&radius=12&theme=dark&langs=6&font=14&showTitle=0)
 
-<sub>Parâmetros: `mode=compact`, `card=1`, `radius=12`, `langs=6`, `theme=dark`, `font=14`, `showTitle=0`. Use `debug=1` para JSON.</sub>
+
 
 <picture align="center">
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/MatheusMartinez54/MatheusMartinez54/output/github-contribution-grid-snake-dark.svg">
