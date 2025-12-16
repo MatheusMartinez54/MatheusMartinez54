@@ -25,7 +25,7 @@ Tenho grande interesse pela área de tecnologia, que está em constante inovaç�
     align="left"
     alt="GitHub Stats"
     width="420"
-    src="https://github-readme-stats.vercel.app/api?username=MatheusMartinez54&show_icons=true&theme=tokyonight&locale=pt-br"
+    src="https://github-readme-stats.vercel.app/api?username=MatheusMartinez54&show_icons=true&theme=tokyonight&include_all_commits=true&locale=pt-br"
   />
 
   <img
